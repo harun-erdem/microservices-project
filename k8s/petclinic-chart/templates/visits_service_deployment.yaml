@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  hystrix-server
+  name:  visits-service
   labels:
-    app:  hystrix-server
+    app:  visits-service
 spec:
   selector:
     matchLabels:
-      app: hystrix-server
+      app: visits-service
   replicas: 1
   template:
     metadata:
       labels:
-        app:  hystrix-server
+        app:  visits-service
     spec:
       initContainers:
       - name: init-discovery-server
         image: busybox
         command: ['sh', '-c', 'until nc -z discovery-server:8761; do echo waiting for discovery-server; sleep 2; done;']
       containers:
-      - name:  hystrix-server
-        image:  "654421006949.dkr.ecr.us-east-1.amazonaws.com/microservice-project:hystrix-dashboard-b5"
+      - name:  visits-service
+        image:  {{ .Values.IMAGE_TAG_VISITS_SERVICE }}
         ports:
-        - containerPort:  7979
+        - containerPort:  8082
       imagePullSecrets:
       - name: regcred

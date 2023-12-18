@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  visits-service
+  name:  api-gateway
   labels:
-    app:  visits-service
+    app:  api-gateway
 spec:
   selector:
     matchLabels:
-      app: visits-service
+      app: api-gateway
   replicas: 1
   template:
     metadata:
       labels:
-        app:  visits-service
+        app:  api-gateway
     spec:
       initContainers:
       - name: init-discovery-server
         image: busybox
         command: ['sh', '-c', 'until nc -z discovery-server:8761; do echo waiting for discovery-server; sleep 2; done;']
       containers:
-      - name:  visits-service
-        image:  "654421006949.dkr.ecr.us-east-1.amazonaws.com/microservice-project:visits-service-b5"
+      - name:  api-gateway
+        image:  {{ .Values.IMAGE_TAG_API_GATEWAY }}
         ports:
-        - containerPort:  8082
+        - containerPort:  8080
       imagePullSecrets:
       - name: regcred

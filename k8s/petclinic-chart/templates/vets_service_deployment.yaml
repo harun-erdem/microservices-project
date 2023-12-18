@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  prometheuse-server
+  name:  vets-service
   labels:
-    app:  prometheuse-server
+    app:  vets-service
 spec:
   selector:
     matchLabels:
-      app: prometheuse-server
+      app: vets-service
   replicas: 1
   template:
     metadata:
       labels:
-        app:  prometheuse-server
+        app:  vets-service
     spec:
       initContainers:
       - name: init-discovery-server
         image: busybox
         command: ['sh', '-c', 'until nc -z discovery-server:8761; do echo waiting for discovery-server; sleep 2; done;']
       containers:
-      - name:  prometheuse-server
-        image:  "654421006949.dkr.ecr.us-east-1.amazonaws.com/microservice-project:prometheus-server-b4"
+      - name:  vets-service
+        image:  {{ .Values.IMAGE_TAG_VETS_SERVICE }}
         ports:
-        - containerPort:  9090
+        - containerPort:  8083
       imagePullSecrets:
       - name: regcred

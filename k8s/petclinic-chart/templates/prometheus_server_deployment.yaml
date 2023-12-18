@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  api-gateway
+  name:  prometheuse-server
   labels:
-    app:  api-gateway
+    app:  prometheuse-server
 spec:
   selector:
     matchLabels:
-      app: api-gateway
+      app: prometheuse-server
   replicas: 1
   template:
     metadata:
       labels:
-        app:  api-gateway
+        app:  prometheuse-server
     spec:
       initContainers:
       - name: init-discovery-server
         image: busybox
         command: ['sh', '-c', 'until nc -z discovery-server:8761; do echo waiting for discovery-server; sleep 2; done;']
       containers:
-      - name:  api-gateway
-        image:  "654421006949.dkr.ecr.us-east-1.amazonaws.com/microservice-project:api-gateway-b5"
+      - name:  prometheuse-server
+        image:  {{ .Values.IMAGE_TAG_PROMETHEUS_SERVER }}
         ports:
-        - containerPort:  8080
+        - containerPort:  9090
       imagePullSecrets:
       - name: regcred
