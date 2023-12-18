@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  prometheuse-server
+  labels:
+    app:  prometheuse-server
+spec:
+  selector:
+    matchLabels:
+      app: prometheuse-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app:  prometheuse-server
+    spec:
+      initContainers:
+      - name: init-discovery-server
+        image: busybox
+        command: ['sh', '-c', 'until nc -z discovery-server:8761; do echo waiting for discovery-server; sleep 2; done;']
+      containers:
+      - name:  prometheuse-server
+        image:  "654421006949.dkr.ecr.us-east-1.amazonaws.com/microservice-project:prometheus-server-b4"
+        ports:
+        - containerPort:  9090
+      imagePullSecrets:
+      - name: regcred

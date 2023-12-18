@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  mysql-server
+  labels:
+    app:  mysql-server
+spec:
+  selector:
+    matchLabels:
+      app: mysql-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app:  mysql-server
+    spec:
+      initContainers:
+      - name: init-discovery-server
+        image: busybox
+        command: ['sh', '-c', 'until nc -z discovery-server:8761; do echo waiting for discovery-server; sleep 2; done;']
+      containers:
+      - name:  mysql-server
+        image:  mysql:5.7.8
+        ports:
+        - containerPort:  3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "petclinic"
+        - name: MYSQL_DATABASE
+          value: "petclinic"
