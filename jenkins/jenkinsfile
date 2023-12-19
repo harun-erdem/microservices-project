@@ -1,0 +1,61 @@
+pipeline{
+    agent any
+    environment{
+        REPO_NAME="microservice-project"
+        AWS_REGION="us-east-1"
+        AWS_ACCOUNT_ID=sh(script: 'aws sts get-caller-identity --query Account --output text', , returnStdout: true).trim()
+        ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+    }
+    stages{
+        stage("Package App"){
+            steps{
+                echo "App is packaging"
+                sh '. ./jenkins/maven_package.sh'
+            }
+        }
+        stage("Prepare Tags for Docker Images"){
+            steps{
+                echo "Tags are preparing for docker images"
+                script{
+                    env.IMAGE_TAG_ADMIN_SERVER="${ECR_REGISTRY}/${REPO_NAME}:admin-server-b${BUILD_NUMBER}"
+                    env.IMAGE_TAG_API_GATEWAY="${ECR_REGISTRY}/${REPO_NAME}:api-gateway-b${BUILD_NUMBER}"
+                    env.IMAGE_TAG_CONFIG_SERVER="${ECR_REGISTRY}/${REPO_NAME}:config-server-b${BUILD_NUMBER}"
+                    env.IMAGE_TAG_CUSTOMERS_SERVER="${ECR_REGISTRY}/${REPO_NAME}:customers-server-b${BUILD_NUMBER}"
+                    env.IMAGE_TAG_DISCOVERY_SERVER="${ECR_REGISTRY}/${REPO_NAME}:discovery-server-b${BUILD_NUMBER}"
+                    env.IMAGE_TAG_HYSTRIX_DASHBOARD="${ECR_REGISTRY}/${REPO_NAME}:hystrix-dashboard-b${BUILD_NUMBER}"
+                    env.IMAGE_TAG_VETS_SERVICE="${ECR_REGISTRY}/${REPO_NAME}:vets-service-b${BUILD_NUMBER}"
+                    env.IMAGE_TAG_VISITS_SERVICE="${ECR_REGISTRY}/${REPO_NAME}:visits-service-b${BUILD_NUMBER}"
+                    env.IMAGE_TAG_GRAFANA_SERVER="${ECR_REGISTRY}/${REPO_NAME}:grafana-server-b${BUILD_NUMBER}"
+                    env.IMAGE_TAG_PROMETHEUS_SERVER="${ECR_REGISTRY}/${REPO_NAME}:prometheus-server-b${BUILD_NUMBER}"
+                }
+            }
+        }
+        stage("Build Docker Images"){
+            steps{
+                echo "Docker images are built"
+                sh '. ./jenkins/ecr_build_images.sh'
+                sh 'docker image ls'
+            }
+        }
+        stage("Push Docker Images"){
+            steps{
+                echo "Docker images are pushed"
+                sh '. ./jenkins/push_images.sh'
+                sh 'docker image ls'
+            }
+        }
+        stage("Deploy App"){
+            steps{
+                echo "App is deployed"
+                sh '. ./jenkins/deploy_app.sh'
+                sh 'helm ls'
+            }
+        }
+    }
+    post{
+        always{
+            echo 'Delete all local images'
+            sh 'docker image prune -af'
+        }
+    }
+}
