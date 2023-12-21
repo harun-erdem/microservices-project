@@ -1,0 +1,21 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: cluster-petclinic
+  region: us-east-1
+
+vpc:
+  subnets:
+    private:
+      us-east-1a: { id: subnet-046ba3345b061bfb3 }
+      us-east-1b: { id: subnet-020fccc47b2d4612f }
+      us-east-1c: { id: subnet-08264da9ae548bef6 }
+
+nodeGroups:
+  - name: managed-ng-1
+    minSize: 2
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 8
+    instanceType: t3a.medium
