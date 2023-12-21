@@ -7,7 +7,7 @@ AWS_REGION=${AWS_REGION} helm s3 push --force ./petclinic-chart-${BUILD_NUMBER}.
 kubectl create ns petclinic || echo 'namespace is already exist'
 kubectl delete secret regcred --namespace petclinic || \
 kubectl create secret generic regcred --namespace petclinic \
-    --from-file=.dockerconfigjson=var/lib/jenkins/.docker/config.json \
+    --from-file=.dockerconfigjson=/var/lib/jenkins/.docker/config.json \
     --type=kubernetes.io/dockerconfigjson
 AWS_REGION=${AWS_REGION} helm repo update
 AWS_REGION=${AWS_REGION} helm upgrade --install my-app-release stable-myapp/petclinic-chart --version ${BUILD_NUMBER} --namespace petclinic
